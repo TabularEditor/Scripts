@@ -7,9 +7,8 @@
  * creating one COUNTROWS measure for each table.
  */
  
-// Loop through all currently selected columns:
+ // Loop through all currently selected tables:
 foreach(var table in Selected.Tables) {
-    // table.IsHidden = false;
     
     var newMeasure = table.AddMeasure(
     "# Rows in " + table.Name,                         // Name
