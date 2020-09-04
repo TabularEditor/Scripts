@@ -15,7 +15,7 @@
 // - no black list is used to prevent the creation of unwanted measures
 
 // ***************************************************************************************************************
-//the following variables are allowing to control the script
+//the following variables are allowing controling the script
 var overwriteExistingMeasures = 0; // 1 overwrites existing measures, 0 preserves existing measures
 
 var measureNameTemplate = "{0} ({1}) - {2}"; // String.Format is used to create the measure name. 
@@ -27,6 +27,7 @@ var measureNameTemplate = "{0} ({1}) - {2}"; // String.Format is used to create 
 
 //store aggregation function that qualify for measure creation to the hashset aggFunctions
 var aggFunctions = new HashSet<AggregateFunction>{
+    AggregateFunction.Default, //remove this line, if you do not want to mess up your measures list by automatically created measures for all the columns that have the Default AggregateFunction assigned
     AggregateFunction.Sum,
     AggregateFunction.Count,
     AggregateFunction.Min,
@@ -34,12 +35,30 @@ var aggFunctions = new HashSet<AggregateFunction>{
     AggregateFunction.Average
 };
 
+//You have to be aware that by default this script will just create measures using the aggregate functions "Sum" or "Count" if
+//the column has the aggregate function AggregateFunction.Default assigned, this is checked further down below.
+//Also, if a column has the Default AggregateFunction assigned and is of the DataType
+//DataType.Automatic, DataType.Unknown, or DataType.Variant, no measure is created automatically, this is checked further down below.
+//dictDataTypeAggregateFunction = new Dictionary<DataType, string>();
+//see this article for all the available data types: https://docs.microsoft.com/en-us/dotnet/api/microsoft.analysisservices.tabular.datatype?view=analysisservices-dotnet
+//Of course you can change the aggregation function that will be used for different data types,
+//as long as you are using "Sum" and "Count"
+//Please be careful, if you change the aggregation function you might end up with multiplemeasures
+var dictDataTypeAggregateFunction = new Dictionary<DataType, AggregateFunction>();
+dictDataTypeAggregateFunction.Add( DataType.Binary , AggregateFunction.Count ); //adding a key/value pair(s) to the dictionary using the Add() method
+dictDataTypeAggregateFunction.Add( DataType.Boolean , AggregateFunction.Count );
+dictDataTypeAggregateFunction.Add( DataType.DateTime , AggregateFunction.Count );
+dictDataTypeAggregateFunction.Add( DataType.Decimal , AggregateFunction.Sum );
+dictDataTypeAggregateFunction.Add( DataType.Double , AggregateFunction.Sum );
+dictDataTypeAggregateFunction.Add( DataType.Int64 , AggregateFunction.Sum );
+dictDataTypeAggregateFunction.Add( DataType.String , AggregateFunction.Count );
+
 // ***************************************************************************************************************
 //all the stuff below this line should not be altered 
 //of course this is not valid if you have to fix my errors, make the code more efficient, 
 //or you have a thorough understanding of what you are doing
 
-//store all the existing measures to the list ListOfMeasures
+//store all the existing measures to the list listOfMeasures
 var listOfMeasures = new List<string>();
 foreach( var m in Model.AllMeasures ) {
     listOfMeasures.Add( m.Name );
@@ -52,18 +71,63 @@ foreach( var t in Model.Tables ) {
     foreach( var c in t.Columns ) {
         
         var currAggFunction = c.SummarizeBy; //cache the aggregation function of the current column c
+        var useAggFunction = AggregateFunction.Sum;
+        var theMeasureName = ""; // Name of the new Measure
+        var posInListOfMeasures = 0; //check if the new measure already exists <> -1
         
         if( aggFunctions.Contains(currAggFunction) ) //check if the current aggregation function qualifies for measure aggregation
         {
-            var newMeasureName = String.Format( measureNameTemplate , c.Name , currAggFunction , t.Name ); // Name of the new Measure
-            var posInListOfMeasures = listOfMeasures.IndexOf( newMeasureName ); //check if the new measure already exists <> -1
+            //check if the current aggregation function is Default
+            if( currAggFunction == AggregateFunction.Default )
+            {
+                // check if the datatype of the column is considered for measure creation
+                if( dictDataTypeAggregateFunction.ContainsKey( c.DataType ) )
+                {
+                    
+                    //some kind of sanity check
+                    if( c.DataType == DataType.Automatic || c.DataType == DataType.Unknown || c.DataType == DataType.Variant )
+                    {
+                        Output("No measure will be created for columns with the data type: " + c.DataType.ToString() + " (" + c.DaxObjectFullName + ")");
+                        continue; //moves to the next item in the foreach loop, the next colum in the current table
+                    }
+                  
+                    //cache the aggregation function from the dictDataTypeAggregateFunction
+                    useAggFunction = dictDataTypeAggregateFunction[ c.DataType ];
+                    
+                    //some kind of sanity check
+                    if( useAggFunction != AggregateFunction.Count && useAggFunction != AggregateFunction.Sum ) 
+                    {    
+                        Output("No measure will be created for the column: " + c.DaxObjectFullName);
+                        continue; //moves to the next item in the foreach loop, the next colum in the current table
+                    }
+                    theMeasureName = String.Format( measureNameTemplate , c.Name , useAggFunction.ToString() , t.Name ); // Name of the new Measure
+                    posInListOfMeasures = listOfMeasures.IndexOf( theMeasureName ); //check if the new measure already exists <> -1
+                    
+                } else {
+                   
+                    continue; //moves to the next item in the foreach loop, the next colum in the current table
+                }
+                        
+            } else {
+                
+                useAggFunction = currAggFunction;    
+                theMeasureName = String.Format( measureNameTemplate , c.Name , useAggFunction.ToString() , t.Name ); // Name of the new Measure
+                posInListOfMeasures = listOfMeasures.IndexOf( theMeasureName ); //check if the new measure already exists <> -1
+                
+            }
             
-            //create the measure if the current aggregation function qualifies for measure creation
+            //sanity check
+            if(theMeasureName == "")
+            {
+                continue; //moves to the next item in the foreach loop, the next colum in the current table
+            }
+            
+            // create the measure
             if( ( posInListOfMeasures == -1 || overwriteExistingMeasures == 1 )) 
             {    
                 if( overwriteExistingMeasures == 1 ) 
                 {
-                    foreach( var m in Model.AllMeasures.Where( m => m.Name == newMeasureName ).ToList() ) 
+                    foreach( var m in Model.AllMeasures.Where( m => m.Name == theMeasureName ).ToList() ) 
                     {
                         m.Delete();
                     }
@@ -71,8 +135,8 @@ foreach( var t in Model.Tables ) {
                 
                 var newMeasure = t.AddMeasure
                 (
-                    newMeasureName                                                                      // Name of the new Measure
-                    , "" + currAggFunction.ToString().ToUpper() + "(" + c.DaxObjectFullName + ")"       // DAX expression
+                    theMeasureName                                                                      // Name of the new Measure
+                    , "" + useAggFunction.ToString().ToUpper() + "(" + c.DaxObjectFullName + ")"        // DAX expression
                 );
                 
                 newMeasure.SetAnnotation( "CreatedThrough" , "CreateExplicitMeasures" ); // flag the measures created throught this script
