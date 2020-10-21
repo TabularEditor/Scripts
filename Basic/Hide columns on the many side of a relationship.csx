@@ -6,6 +6,10 @@
  * it is dangerous to use columns on the many side of a relationship as it can 
  * produce unexpected results, so it is a best practice to hide these columns
  * to discourage their use in reports.
+ *
+ * This script does not play well with Auto Calendar Tables (because your Calendar Date 
+ * column is technically on the many side of the hidden Auto Calendar Tables.  
+ * Make sure you turn off Auto Calendar Tables first before using this script.
  */
 
 // Hide all columns on many side of a join
