@@ -26,7 +26,6 @@ foreach(var m in Selected.Measures) {
     m.DisplayFolder                                        // Display Folder
     );
     
-
     // YTD
     m.Table.AddMeasure(
     m.Name + " YTD",                                       // Name
@@ -55,7 +54,6 @@ foreach(var m in Selected.Measures) {
     m.DisplayFolder                                        // Display Folder
     );
     
-     
     // PY YTD
     m.Table.AddMeasure(
     m.Name + " PY YTD",                                       // Name
