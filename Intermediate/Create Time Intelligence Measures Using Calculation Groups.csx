@@ -9,7 +9,7 @@
  */
 
 
-// For each selected measure create YTY, PY, PY YTD, YOY, YOY% measures
+// For each selected measure create MTD, QTD, YTD, PY, PY MTD, PY QTD, PY YTD, YOY, YOY% measures
 foreach(var m in Selected.Measures) {
     
     // MTD
