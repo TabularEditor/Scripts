@@ -12,6 +12,21 @@
 // For each selected measure create YTY, PY, PY YTD, YOY, YOY% measures
 foreach(var m in Selected.Measures) {
     
+    // MTD
+    m.Table.AddMeasure(
+    m.Name + " MTD",                                       // Name
+    "Calculate(" + m.DaxObjectName + ", 'Time Intelligence'[Time Calculation]=\"MTD\")",    
+    m.DisplayFolder                                        // Display Folder
+    );
+    
+    // QTD
+    m.Table.AddMeasure(
+    m.Name + " QTD",                                       // Name
+    "Calculate(" + m.DaxObjectName + ", 'Time Intelligence'[Time Calculation]=\"QTD\")",    
+    m.DisplayFolder                                        // Display Folder
+    );
+    
+
     // YTD
     m.Table.AddMeasure(
     m.Name + " YTD",                                       // Name
@@ -21,11 +36,26 @@ foreach(var m in Selected.Measures) {
     
     // PY
     m.Table.AddMeasure(
-    m.Name + " YTD",                                       // Name
+    m.Name + " PY",                                       // Name
     "Calculate(" + m.DaxObjectName + ", 'Time Intelligence'[Time Calculation]=\"PY\")",    
     m.DisplayFolder                                        // Display Folder
     );
     
+    // PY MTD
+    m.Table.AddMeasure(
+    m.Name + " PY MTD",                                       // Name
+    "Calculate(" + m.DaxObjectName + ", 'Time Intelligence'[Time Calculation]=\"PY MTD\")",    
+    m.DisplayFolder                                        // Display Folder
+    );
+    
+    // PY QTD
+    m.Table.AddMeasure(
+    m.Name + " PY QTD",                                       // Name
+    "Calculate(" + m.DaxObjectName + ", 'Time Intelligence'[Time Calculation]=\"PY QTD\")",    
+    m.DisplayFolder                                        // Display Folder
+    );
+    
+     
     // PY YTD
     m.Table.AddMeasure(
     m.Name + " PY YTD",                                       // Name
