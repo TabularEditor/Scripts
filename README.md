@@ -2,7 +2,7 @@
 Community repository for sharing and discussing scripts for use with Tabular Editor.
 
 ## Using scripts from this repository
-If you'd like to use a script from this repository, simply copy the script content into the Advanced Scripting pane of Tabular Editor. For more details about scripting, [read this article](https://github.com/otykier/TabularEditor/wiki/Advanced-Scripting). You may also [store scripts as Custom Actions](https://github.com/otykier/TabularEditor/wiki/Custom-Actions) that are integrated in Tabular Editor's UI.
+If you'd like to use a script from this repository, simply copy the script content into the Advanced Scripting pane of Tabular Editor. For more details about scripting, [read this article](https://docs.tabulareditor.com/index.html). You may also [store scripts as Custom Actions](https://docs.tabulareditor.com/index.html) that are integrated in Tabular Editor's UI.
 
 **DISCLAIMER:** THE SCRIPTS IN THIS REPOSITORY ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. You are responsible for ensuring that any scripts you execute does not contain malicious code, or does not cause unwanted changes to your tabular models. If you do not understand what the code does, do not blindly execute it! A script has access to the full power of the .NET platform, meaning it can theoretically alter system files, download stuff from the internet, etc. Do not execute a script from sources you do not trust.
 
