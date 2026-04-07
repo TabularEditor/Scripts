@@ -1,0 +1,37 @@
+{
+    "id": "6fcca4d1-4a0b-4f6e-81a0-fe8f220e6658",
+    "title": "Negative Invoice Quantities on Adjustments",
+    "messages": [
+        {
+            "role": "user",
+            "contents": [
+                {
+                    "$type": "text",
+                    "text": "VizOutliers flagged low-value outliers on Net Invoice Quantity, including negative values. Are all negative quantities on return order types, or are some on regular invoices?"
+                }
+            ],
+            "additionalProperties": {
+                "ts": "2026-04-01T18:39:53.0186148+02:00"
+            }
+        },
+        {
+            "role": "assistant",
+            "contents": [
+                {
+                    "$type": "text",
+                    "text": "<toolcall tool=\"search_knowledge_base\" id=\"call_mezwssIwdPj7IAGXiVRmKfWv\" display=\"Searching knowledge base\" details=\"Tabular Editor DAX query distinct values summarize columns execute_dax_query consent examples\" done=\"true\"/><toolcall tool=\"execute_dax_query\" id=\"call_XqgzPyFb47YyJt3kE8n79a5m\" display=\"Executing DAX query\" details=\"EVALUATE&#10;VAR Negatives =&#10;    FILTER(&#10;        ADDCOLUMNS(&#10;            &apos;Invoices&apos;,&#10;            &quot;DocGroup&quot;, RELATED(&apos;Invoice Document Type&apos;[Group]),&#10;            &quot;DocText&quot;, RELATED(&apos;Invoice Document Type&apos;[Text])&#10;        ),&#10;        &apos;Invoices&apos;[Net Invoice Quantity] &lt; 0&#10;    )&#10;RETURN&#10;SUMMARIZECOLUMNS(&#10;    Negatives[DocGroup],&#10;    Negatives[DocText],&#10;    &quot;Rows&quot;, COUNTROWS(Negatives),&#10;    &quot;Qty&quot;, SUMX(Negatives, &apos;Invoices&apos;[Net Invoice Quantity])&#10;)&#10;ORDER BY [Rows] DESC, [Qty] ASC\" failed=\"true\"/><toolcall tool=\"execute_dax_query\" id=\"call_vUKXJbuMpnxJar0vwuYT5fWv\" display=\"Executing DAX query\" details=\"EVALUATE&#10;VAR Negatives =&#10;    FILTER(&#10;        ADDCOLUMNS(&#10;            &apos;Invoices&apos;,&#10;            &quot;DocGroup&quot;, RELATED(&apos;Invoice Document Type&apos;[Group]),&#10;            &quot;DocText&quot;, RELATED(&apos;Invoice Document Type&apos;[Text])&#10;        ),&#10;        &apos;Invoices&apos;[Net Invoice Quantity] &lt; 0&#10;    )&#10;RETURN&#10;SUMMARIZE(&#10;    Negatives,&#10;    [DocGroup],&#10;    [DocText],&#10;    &quot;Rows&quot;, COUNTROWS(Negatives),&#10;    &quot;Qty&quot;, SUMX(Negatives, &apos;Invoices&apos;[Net Invoice Quantity])&#10;)&#10;ORDER BY [Rows] DESC, [Qty] ASC\" done=\"true\"/>Negative [Net Invoice Quantity](te3://objref/Invoices[Net Invoice Quantity]) rows are not limited to return types.\n\n- The negatives in [Invoices](te3://objref/Invoices) all map to [Invoice Document Type](te3://objref/'Invoice Document Type') group **Adjustment**\n- The visible texts are **Warranty** and **Return**\n- I did not find negative quantities on regular invoice document types in this check\n\nSo: negative quantities appear to be adjustment documents, not standard invoices. 1.93M rows of them, because apparently someone enjoyed pressing the minus key.\n\nIf you want, I can also break this down by exact document type code and show whether any non-adjustment groups contain negatives."
+                }
+            ],
+            "messageId": "5d509973-9176-4a42-b958-6059eb659f11",
+            "additionalProperties": {
+                "ts": "2026-04-01T18:40:10.9409855+02:00"
+            }
+        }
+    ],
+    "artifacts": [],
+    "contextProvider": {
+        "includeModelSummary": false
+    },
+    "inputTokens": 4715,
+    "outputTokens": 613
+}

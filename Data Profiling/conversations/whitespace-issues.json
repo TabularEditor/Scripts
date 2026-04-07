@@ -1,0 +1,120 @@
+{
+  "id": "2dd95626-4cc7-4598-8383-01fa0fd8017c",
+  "title": "Double Space Issues in Customer Names",
+  "messages": [
+    {
+      "role": "user",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "The macro VizStringQuality found whitespace issues in Customer Sold-To Name. Which distinct issues are there, and how many rows/values are affected?"
+        }
+      ],
+      "additionalProperties": {
+        "ts": "2026-04-01T17:30:38.5235276+02:00"
+      }
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "<toolcall tool=\"search_knowledge_base\" id=\"call_zJxXALYYfqfnvC3THN80AM5a\" display=\"Searching knowledge base\" details=\"Tabular Editor DAX query distinct count values whitespace leading trailing spaces LEN TRIM SUBSTITUTE UNICHAR 160\" done=\"true\"/><toolcall tool=\"execute_dax_query\" id=\"call_8pEaVmymWdfTwT612V8lDhv2\" display=\"Executing DAX query\" details=\"EVALUATE&#10;VAR Base =&#10;    ADDCOLUMNS(&#10;        VALUES ( Customers[Customer Sold-To Name] ),&#10;        &quot;HasLeading&quot;, LEFT ( Customers[Customer Sold-To Name], 1 ) = &quot; &quot;,&#10;        &quot;HasTrailing&quot;, RIGHT ( Customers[Customer Sold-To Name], 1 ) = &quot; &quot;,&#10;        &quot;HasDoubleSpace&quot;, CONTAINSSTRING ( Customers[Customer Sold-To Name], &quot;  &quot; ),&#10;        &quot;HasTab&quot;, CONTAINSSTRING ( Customers[Customer Sold-To Name], UNICHAR ( 9 ) ),&#10;        &quot;HasCR&quot;, CONTAINSSTRING ( Customers[Customer Sold-To Name], UNICHAR ( 13 ) ),&#10;        &quot;HasLF&quot;, CONTAINSSTRING ( Customers[Customer Sold-To Name], UNICHAR ( 10 ) ),&#10;        &quot;HasNBSP&quot;, CONTAINSSTRING ( Customers[Customer Sold-To Name], UNICHAR ( 160 ) )&#10;    )&#10;RETURN&#10;    ROW(&#10;        &quot;Distinct values&quot;, COUNTROWS ( Base ),&#10;        &quot;Leading space values&quot;, COUNTROWS ( FILTER ( Base, [HasLeading] ) ),&#10;        &quot;Trailing space values&quot;, COUNTROWS ( FILTER ( Base, [HasTrailing] ) ),&#10;        &quot;Double space values&quot;, COUNTROWS ( FILTER ( Base, [HasDoubleSpace] ) ),&#10;        &quot;Tab values&quot;, COUNTROWS ( FILTER ( Base, [HasTab] ) ),&#10;        &quot;CR values&quot;, COUNTROWS ( FILTER ( Base, [HasCR] ) ),&#10;        &quot;LF values&quot;, COUNTROWS ( FILTER ( Base, [HasLF] ) ),&#10;        &quot;NBSP values&quot;, COUNTROWS ( FILTER ( Base, [HasNBSP] ) )&#10;    )\" done=\"true\"/><toolcall tool=\"execute_dax_query\" id=\"call_aAHQA9S8BjjsJIFCFBHHDCAM\" display=\"Executing DAX query\" details=\"EVALUATE&#10;VAR Base =&#10;    ADDCOLUMNS(&#10;        VALUES ( Customers[Customer Sold-To Name] ),&#10;        &quot;HasDoubleSpace&quot;, CONTAINSSTRING ( Customers[Customer Sold-To Name], &quot;  &quot; )&#10;    )&#10;RETURN&#10;    ROW(&#10;        &quot;Distinct values&quot;, COUNTROWS ( Base ),&#10;        &quot;Distinct values with double spaces&quot;, COUNTROWS ( FILTER ( Base, [HasDoubleSpace] ) )&#10;    )\" done=\"true\"/><toolcall tool=\"execute_dax_query\" id=\"call_xX9zryr6qqQqqmou11DPtzmy\" display=\"Executing DAX query\" details=\"EVALUATE&#10;VAR Base =&#10;    ADDCOLUMNS(&#10;        VALUES ( Customers[Customer Sold-To Name] ),&#10;        &quot;HasDoubleSpace&quot;, CONTAINSSTRING ( Customers[Customer Sold-To Name], &quot;  &quot; )&#10;    )&#10;RETURN&#10;    ROW(&#10;        &quot;Rows affected&quot;, CALCULATE ( COUNTROWS ( Customers ), FILTER ( Customers, CONTAINSSTRING ( Customers[Customer Sold-To Name], &quot;  &quot; ) ) ),&#10;        &quot;Distinct values affected&quot;, COUNTROWS ( FILTER ( Base, [HasDoubleSpace] ) )&#10;    )\" done=\"true\"/>I checked [Customers[Customer Sold-To Name]](te3://objref/Customers[Customer Sold-To Name]).\n\n- Distinct whitespace issue found: double spaces inside the value\n- Distinct values affected: 118\n- Rows affected: 209\n\nNo leading/trailing spaces, tabs, CR/LF, or non-breaking spaces showed up in the scan. A rare moment of restraint from the source system.\n\n**Sources:**\n- **Doc**: [Trim Leading and Trailing Spaces from Object Names | Tabular Editor Documentation](https://docs.tabulareditor.com/en/kb/bpa-trim-object-names.html#overview) - background on whitespace hygiene in Tabular Editor\n"
+        }
+      ],
+      "messageId": "825b5f5e-89a0-401e-b029-fb41cc8d69b4",
+      "additionalProperties": {
+        "ts": "2026-04-01T17:30:51.7126412+02:00"
+      }
+    },
+    {
+      "role": "user",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "Print the top 5 (alphabetical) Customer Sold-To Names affected"
+        }
+      ],
+      "additionalProperties": {
+        "ts": "2026-04-07T09:28:59.1598061+02:00"
+      }
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "<toolcall tool=\"search_knowledge_base\" id=\"call_RJ1WzkdA3BJdh9SLoKuy5Kr8\" display=\"Searching knowledge base\" details=\"Tabular Editor DAX query distinct values topn alphabetical values column names whitespace issues\" done=\"true\"/><toolcall tool=\"execute_dax_query\" id=\"call_MwSxRUMOXbDts9SFmlli4ncq\" display=\"Executing DAX query\" details=\"EVALUATE&#10;VAR AffectedRows =&#10;    FILTER (&#10;        ALL ( &apos;Customers&apos;[Customer Sold-To Name] ),&#10;        NOT ISBLANK ( &apos;Customers&apos;[Customer Sold-To Name] )&#10;            &amp;&amp; (&#10;                LEFT ( &apos;Customers&apos;[Customer Sold-To Name], 1 ) = &quot; &quot;&#10;                || RIGHT ( &apos;Customers&apos;[Customer Sold-To Name], 1 ) = &quot; &quot;&#10;                || CONTAINSSTRING ( &apos;Customers&apos;[Customer Sold-To Name], &quot;  &quot; )&#10;                || CONTAINSSTRING ( &apos;Customers&apos;[Customer Sold-To Name], UNICHAR ( 9 ) )&#10;                || CONTAINSSTRING ( &apos;Customers&apos;[Customer Sold-To Name], UNICHAR ( 10 ) )&#10;                || CONTAINSSTRING ( &apos;Customers&apos;[Customer Sold-To Name], UNICHAR ( 13 ) )&#10;                || CONTAINSSTRING ( &apos;Customers&apos;[Customer Sold-To Name], UNICHAR ( 160 ) )&#10;            )&#10;    )&#10;RETURN&#10;    TOPN (&#10;        5,&#10;        SELECTCOLUMNS (&#10;            AffectedRows,&#10;            &quot;Customer Sold-To Name&quot;, &apos;Customers&apos;[Customer Sold-To Name]&#10;        ),&#10;        [Customer Sold-To Name],&#10;        ASC&#10;    )\" done=\"true\"/>Top 5 affected [Customer Sold-To Name](te3://objref/Customers[Customer Sold-To Name]) values, alphabetically:\n\n1. Antarctic Corporation  (Apollo Station Branch)\n2. Andromeda Shipyards (Ephyra  Branch)\n3. Antarctic Corporation  (AG Refueling & Supply Station Branch)\n4. Aminu Kano Navy (Nether  Branch)\n5. Aminu Kano Navy (Ephyra  Branch)\n\nAll five contain the same charming little double-space problem."
+        }
+      ],
+      "messageId": "0ef04f56-945a-4e63-bbf6-1a6f3f72743b",
+      "additionalProperties": {
+        "ts": "2026-04-07T09:29:12.3097578+02:00"
+      }
+    },
+    {
+      "role": "user",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "It's not very clear in the UI where the double spaces are. Write a query that returns the affected values with visible symbols instead of space"
+        }
+      ],
+      "additionalProperties": {
+        "ts": "2026-04-07T09:33:00.938043+02:00"
+      }
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "<artifact type=\"dax-query\" id=\"1593ac48-006a-4a63-8f07-2955f73b2714\" title=\"Show whitespace issues with visible symbols\"></artifact>Created a query for [Customers[Customer Sold-To Name]](te3://objref/Customers[Customer Sold-To Name]) that shows affected values with spaces replaced by `·`.\n\n- It filters to values containing double spaces\n- It returns the visible version of each value\n- It includes a row count per affected value\n\nIf you want, I can also make it show:\n- leading/trailing spaces as `␠`\n- tabs as `→`\n- non-breaking spaces as `⍽`\n\nBecause whitespace is never just whitespace."
+        }
+      ],
+      "messageId": "246d9fc9-f54c-46c1-a604-edb9150646ec",
+      "additionalProperties": {
+        "ts": "2026-04-07T09:33:06.9180595+02:00"
+      }
+    },
+    {
+      "role": "user",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "Replace with @"
+        }
+      ],
+      "additionalProperties": {
+        "ts": "2026-04-07T13:30:41.5952984+02:00"
+      }
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": ""
+        }
+      ],
+      "messageId": "25f1ff10-0d39-4b79-a7d7-712b9cfd233c",
+      "additionalProperties": {
+        "ts": "2026-04-07T13:30:45.5407162+02:00"
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "artifactType": "dax-query",
+      "id": "1593ac48-006a-4a63-8f07-2955f73b2714",
+      "title": "Show whitespace issues with visible symbols",
+      "viewSequenceId": 3,
+      "codeContent": "EVALUATE\nVAR AffectedValues =\n    FILTER(\n        VALUES ( 'Customers'[Customer Sold-To Name] ),\n        CONTAINSSTRING ( 'Customers'[Customer Sold-To Name], \"  \" )\n    )\nRETURN\n    ADDCOLUMNS(\n        AffectedValues,\n        \"Visible Name\",\n            SUBSTITUTE ( 'Customers'[Customer Sold-To Name], \" \", \"·\" ),\n        \"Row Count\",\n            CALCULATE ( COUNTROWS ( 'Customers' ) )\n    )\nORDER BY\n    'Customers'[Customer Sold-To Name]"
+    }
+  ],
+  "contextProvider": {
+    "includeModelSummary": false
+  },
+  "inputTokens": 5197,
+  "outputTokens": 6
+}
