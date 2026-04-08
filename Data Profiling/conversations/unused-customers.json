@@ -1,0 +1,62 @@
+{
+    "id": "6386208e-b555-4e8e-b89c-152f8748ef3b",
+    "title": "23 Unmatched Customers in Invoices",
+    "messages": [
+        {
+            "role": "user",
+            "contents": [
+                {
+                    "$type": "text",
+                    "text": "VizRelationshipCoverage shows unmatched PK values in the Customers dimension, customers that don't appear in any invoice. How many are there, and which customers are they?"
+                }
+            ],
+            "additionalProperties": {
+                "ts": "2026-04-01T18:32:35.0818608+02:00"
+            }
+        },
+        {
+            "role": "assistant",
+            "contents": [
+                {
+                    "$type": "text",
+                    "text": "<toolcall tool=\"execute_dax_query\" id=\"call_bBfCaYXq7dErG6cY3uIbNrkw\" display=\"Executing DAX query\" details=\"EVALUATE&#10;VAR UnmatchedCustomers =&#10;    EXCEPT(&#10;        VALUES(Customers[Customer Key]),&#10;        VALUES(Invoices[Customer Key])&#10;    )&#10;RETURN&#10;    ADDCOLUMNS(&#10;        UnmatchedCustomers,&#10;        &quot;Customer Sold-To Name&quot;, CALCULATE(SELECTEDVALUE(Customers[Customer Sold-To Name])),&#10;        &quot;Account Name&quot;, CALCULATE(SELECTEDVALUE(Customers[Account Name])),&#10;        &quot;Key Account Name&quot;, CALCULATE(SELECTEDVALUE(Customers[Key Account Name])),&#10;        &quot;Account Type&quot;, CALCULATE(SELECTEDVALUE(Customers[Account Type])),&#10;        &quot;Transaction Type&quot;, CALCULATE(SELECTEDVALUE(Customers[Transaction Type]))&#10;    )&#10;ORDER BY [Customer Key]\" done=\"true\"/>There are **23** unmatched customers in [Customers](te3://objref/Customers) — customer keys that do not appear in [Invoices](te3://objref/Invoices).\n\n| Customer Key | Customer Sold-To Name | Account Name | Key Account Name | Account Type | Transaction Type |\n|---|---|---|---|---|---|\n| 10000188B | Supernova Spaceparts (Sol V Salvaging Station Branch) | Supernova Spaceparts | Supernova Spaceparts | Key Account | B2B |\n| 10000290B | Elysium Aerospace (Norheim Substation Branch) | Elysium Aerospace | Elysium Aerospace | Key Account | B2B |\n| 10000428B | Aminu Kano Navy (Shepard Station Branch) | Aminu Kano Navy | Aminu Kano Navy | Key Account | B2B |\n| 10000475B | Black Flag Spaceships (Norheim Substation Branch) | Black Flag Spaceships | Black Flag Spaceships | Key Account | B2B |\n| 10000625B | Ingo's Foundries | Ingo's Foundries | No Key Account | No Key Account | B2B |\n| 10000690B | Black Flag Spaceships (Grondsgrunn Substation Branch) | Black Flag Spaceships | Black Flag Spaceships | Key Account | B2B |\n| 10000877B | Ashley's Shipbuilders | Ashley's Shipbuilders | No Key Account | No Key Account | B2B |\n| 10000971B | Aminu Kano Navy (Port Auckney Branch) | Aminu Kano Navy | Aminu Kano Navy | Key Account | B2B |\n| 10001299B | Henry's Trades | Henry's Trades | No Key Account | No Key Account | B2B |\n| 10001538C | Ana Tello Vicente | Ana Tello Vicente | Private Contract | Private Buyer | B2C |\n| 10001626B | Sigil Interstellar (Mermerus Station Branch) | Sigil Interstellar | Sigil Interstellar | Key Account | B2B |\n| 10001785B | Thesra's Reactors | Thesra's Reactors | No Key Account | No Key Account | B2B |\n| 10001824C | Laure Le Hebert | Laure Le Hebert | Private Contract | Private Buyer | B2C |\n| 10001929B | Lunar Groups | Lunar Groups | No Key Account | No Key Account | B2B |\n| 10002103C | Danny Hughes | Danny Hughes | Private Contract | Private Buyer | B2C |\n| 10002183B | Nancy's Galactic Imports | Nancy's Galactic Imports | No Key Account | No Key Account | B2B |\n| 10002232B | Galactic Rockets | Galactic Rockets | No Key Account | No Key Account | B2B |\n| 10002456B | Christopher's Shipwrights | Christopher's Shipwrights | No Key Account | No Key Account | B2B |\n| 10002762B | Elysa's Weaponry | Elysa's Weaponry | No Key Account | No Key Account | B2B |\n| 10002807B | The Burning Planet | The Burning Planet | No Key Account | No Key Account | B2B |\n| 10003037B | Piotr's Reparations | Piotr's Reparations | No Key Account | No Key Account | B2B |\n| 10003154B | Aminu Kano Navy (Pallas Station Branch) | Aminu Kano Navy | Aminu Kano Navy | Key Account | B2B |\n| 10003186B | Pioneering Systems (Enceladus Branch) | Pioneering Systems | Pioneering Systems | Key Account | B2B |\n\nIf you want, I can also split these into:\n- customers with **zero invoices but present in Budget**\n- customers with **no fact-table activity at all**\n- customers grouped by **Account Type** or **Key Account**."
+                }
+            ],
+            "messageId": "a8a14e29-dfc1-4202-a05d-2ca60d20232e",
+            "additionalProperties": {
+                "ts": "2026-04-01T18:32:44.3292082+02:00"
+            }
+        },
+        {
+            "role": "user",
+            "contents": [
+                {
+                    "$type": "text",
+                    "text": "Is there a pattern in these customers vs the other customers?"
+                }
+            ],
+            "additionalProperties": {
+                "ts": "2026-04-01T20:15:04.1008206+02:00"
+            }
+        },
+        {
+            "role": "assistant",
+            "contents": [
+                {
+                    "$type": "text",
+                    "text": "<toolcall tool=\"execute_dax_query\" id=\"call_toGC2aiFl9cxpcK7mdDL3uXl\" display=\"Executing DAX query\" details=\"EVALUATE&#10;VAR UnmatchedCustomers =&#10;    FILTER(&#10;        ADDCOLUMNS(&#10;            VALUES(Customers[Customer Key]),&#10;            &quot;InvoiceCount&quot;, CALCULATE(COUNTROWS(Invoices)),&#10;            &quot;OrderCount&quot;, CALCULATE(COUNTROWS(Orders)),&#10;            &quot;BudgetCount&quot;, CALCULATE(COUNTROWS(Budget)),&#10;            &quot;AccountType&quot;, CALCULATE(SELECTEDVALUE(Customers[Account Type])),&#10;            &quot;TransactionType&quot;, CALCULATE(SELECTEDVALUE(Customers[Transaction Type])),&#10;            &quot;Station&quot;, CALCULATE(SELECTEDVALUE(Customers[Station])),&#10;            &quot;AccountName&quot;, CALCULATE(SELECTEDVALUE(Customers[Account Name])),&#10;            &quot;SoldToName&quot;, CALCULATE(SELECTEDVALUE(Customers[Customer Sold-To Name])),&#10;            &quot;KeyAccountName&quot;, CALCULATE(SELECTEDVALUE(Customers[Key Account Name]))&#10;        ),&#10;        [InvoiceCount] = 0&#10;    )&#10;RETURN&#10;    SUMMARIZECOLUMNS(&#10;        UnmatchedCustomers[AccountType],&#10;        UnmatchedCustomers[TransactionType],&#10;        &quot;Customers&quot;, COUNTROWS(UnmatchedCustomers),&#10;        &quot;With Orders&quot;, COUNTROWS(FILTER(UnmatchedCustomers, [OrderCount] &gt; 0)),&#10;        &quot;With Budget&quot;, COUNTROWS(FILTER(UnmatchedCustomers, [BudgetCount] &gt; 0))&#10;    )\" failed=\"true\"/><toolcall tool=\"execute_dax_query\" id=\"call_LRd2ny0P4DzZ37GIsANdhDci\" display=\"Executing DAX query\" details=\"EVALUATE&#10;VAR UnmatchedCustomers =&#10;    FILTER(&#10;        ADDCOLUMNS(&#10;            VALUES(Customers[Customer Key]),&#10;            &quot;InvoiceCount&quot;, CALCULATE(COUNTROWS(Invoices)),&#10;            &quot;OrderCount&quot;, CALCULATE(COUNTROWS(Orders)),&#10;            &quot;BudgetCount&quot;, CALCULATE(COUNTROWS(Budget)),&#10;            &quot;AccountType&quot;, CALCULATE(SELECTEDVALUE(Customers[Account Type])),&#10;            &quot;TransactionType&quot;, CALCULATE(SELECTEDVALUE(Customers[Transaction Type])),&#10;            &quot;Station&quot;, CALCULATE(SELECTEDVALUE(Customers[Station])),&#10;            &quot;AccountName&quot;, CALCULATE(SELECTEDVALUE(Customers[Account Name])),&#10;            &quot;SoldToName&quot;, CALCULATE(SELECTEDVALUE(Customers[Customer Sold-To Name])),&#10;            &quot;KeyAccountName&quot;, CALCULATE(SELECTEDVALUE(Customers[Key Account Name]))&#10;        ),&#10;        [InvoiceCount] = 0&#10;    )&#10;RETURN&#10;    SELECTCOLUMNS(&#10;        UnmatchedCustomers,&#10;        &quot;Customer Key&quot;, Customers[Customer Key],&#10;        &quot;Account Type&quot;, [AccountType],&#10;        &quot;Transaction Type&quot;, [TransactionType],&#10;        &quot;Orders&quot;, [OrderCount],&#10;        &quot;Budget&quot;, [BudgetCount],&#10;        &quot;Station&quot;, [Station],&#10;        &quot;Account Name&quot;, [AccountName],&#10;        &quot;Sold-To&quot;, [SoldToName],&#10;        &quot;Key Account Name&quot;, [KeyAccountName]&#10;    )&#10;ORDER BY [Account Type], [Transaction Type], [Customer Key]\" done=\"true\"/>Yes. A few clear patterns in the unmatched [Customers](te3://objref/Customers) that have no [Invoices](te3://objref/Invoices):\n\n- They are all still present in [Orders](te3://objref/Orders). So these are not dead dimension members; they’re just invoice-less. Very on-brand for a model with a dramatic relationship coverage issue.\n- They split cleanly by [Account Type](te3://objref/Customers[Account Type]):\n  - **9** `Key Account`\n  - **11** `No Key Account`\n  - **3** `Private Buyer`\n- The `Key Account` ones are mostly branch-level customers tied to a shared parent account in [Key Account Name](te3://objref/Customers[Key Account Name]) and [Account Name](te3://objref/Customers[Account Name]) — for example:\n  - [Aminu Kano Navy](te3://objref/Customers[Account Name]) appears in multiple branches\n  - [Black Flag Spaceships](te3://objref/Customers[Account Name]) appears in multiple branches\n  - [Supernova Spaceparts](te3://objref/Customers[Account Name]) appears once\n- The `No Key Account` customers are mostly standalone B2B accounts with no invoice activity.\n- The `Private Buyer` customers are all B2C records with `Transaction Type = B2C` and `Key Account Name = Private Contract`.\n\nSo the pattern is less “mysterious orphan” and more:\n1. all have orders,\n2. none have invoices,\n3. they cluster by customer type, with branch-style key accounts being the most common.\n\nIf you want, I can also break this down by:\n- [Station](te3://objref/Customers[Station])\n- [Account Type](te3://objref/Customers[Account Type])\n- whether they have **Budget** rows as well\n- or identify which of these are likely data quality issues vs legitimate pre-invoice customers."
+                }
+            ],
+            "messageId": "983001cd-7ed4-4cd0-8ca8-4753c3177245",
+            "additionalProperties": {
+                "ts": "2026-04-01T20:15:21.4315539+02:00"
+            }
+        }
+    ],
+    "artifacts": [],
+    "contextProvider": {
+        "includeModelSummary": false
+    },
+    "inputTokens": 5575,
+    "outputTokens": 1175
+}
