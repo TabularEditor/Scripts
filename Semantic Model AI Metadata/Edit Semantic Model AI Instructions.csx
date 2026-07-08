@@ -9,6 +9,9 @@
  * AI instructions stored in culture linguistic metadata CustomInstructions.
  * It uses the connected model, defaults to the en-US culture, and does not
  * require a selected object.
+ *
+ * Provided as-is. This script edits culture linguistic metadata directly and is
+ * not an official supported Tabular Editor product feature.
  */
 
 // TE3 Desktop GUI editor for semantic model AI instructions.
@@ -56,7 +59,7 @@ public static class AiInstructionsEditor
         }
 
         using (var form = new Form())
-        using (var editor = ScriptTextEditor.Create("markdown", true))
+        using (var editor = ScriptTextEditor.Create(true))
         {
             form.Text = "Semantic Model AI Instructions";
             form.StartPosition = FormStartPosition.CenterScreen;
@@ -84,8 +87,7 @@ public static class AiInstructionsEditor
                 AutoEllipsis = true,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Font = font,
-                Text = "Model: " + model.Name + "    Culture: " + culture.Name +
-                    (editor.IsScintilla ? "    Editor: Scintilla" : "    Editor: TextBox")
+                Text = "Model: " + model.Name + "    Culture: " + culture.Name
             };
 
             var editorPanel = new Panel
@@ -332,50 +334,32 @@ public static class AiInstructionsEditor
 
 public sealed class ScriptTextEditor : IDisposable
 {
-    private readonly object scintilla;
     private readonly TextBox textBox;
-    private bool wordWrap;
 
     public Control Control { get; private set; }
-    public bool IsScintilla { get { return scintilla != null; } }
     public event EventHandler TextChanged;
 
-    private ScriptTextEditor(object scintillaControl, TextBox fallbackTextBox, bool initialWordWrap)
+    private ScriptTextEditor(TextBox textBox)
     {
-        scintilla = scintillaControl;
-        textBox = fallbackTextBox;
-        Control = (Control)(scintillaControl ?? (object)fallbackTextBox);
-        wordWrap = initialWordWrap;
+        this.textBox = textBox;
+        Control = textBox;
         Control.TextChanged += (sender, args) => TextChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public static ScriptTextEditor Create(string lexerName, bool wordWrap)
+    public static ScriptTextEditor Create(bool wordWrap)
     {
-        try
+        var textBox = new TextBox
         {
-            var assembly = AppDomain.CurrentDomain.GetAssemblies()
-                .FirstOrDefault(a => string.Equals(a.GetName().Name, "ScintillaNET", StringComparison.OrdinalIgnoreCase))
-                ?? Assembly.Load("ScintillaNET");
-            var type = assembly.GetType("ScintillaNET.Scintilla", true);
-            var control = (Control)Activator.CreateInstance(type);
-            ConfigureScintilla(control, lexerName, wordWrap);
-            return new ScriptTextEditor(control, null, wordWrap);
-        }
-        catch
-        {
-            var fallback = new TextBox
-            {
-                Dock = DockStyle.Fill,
-                Multiline = true,
-                ScrollBars = ScrollBars.Both,
-                WordWrap = wordWrap,
-                AcceptsReturn = true,
-                AcceptsTab = true,
-                Font = new Font("Consolas", 10F),
-                BorderStyle = BorderStyle.None
-            };
-            return new ScriptTextEditor(null, fallback, wordWrap);
-        }
+            Dock = DockStyle.Fill,
+            Multiline = true,
+            ScrollBars = ScrollBars.Both,
+            WordWrap = wordWrap,
+            AcceptsReturn = true,
+            AcceptsTab = true,
+            Font = new Font("Consolas", 10F),
+            BorderStyle = BorderStyle.None
+        };
+        return new ScriptTextEditor(textBox);
     }
 
     public string Text
@@ -386,18 +370,10 @@ public sealed class ScriptTextEditor : IDisposable
 
     public bool WordWrap
     {
-        get { return wordWrap; }
+        get { return textBox.WordWrap; }
         set
         {
-            wordWrap = value;
-            if (textBox != null)
-            {
-                textBox.WordWrap = value;
-                return;
-            }
-
-            SetEnumProperty(scintilla, "WrapMode", value ? "Word" : "None");
-            SetProperty(scintilla, "HScrollBar", !value);
+            textBox.WordWrap = value;
         }
     }
 
@@ -408,121 +384,12 @@ public sealed class ScriptTextEditor : IDisposable
 
     public void SelectStart()
     {
-        if (textBox != null)
-        {
-            textBox.SelectionStart = 0;
-            textBox.SelectionLength = 0;
-            return;
-        }
-
-        SetProperty(scintilla, "CurrentPosition", 0);
-        SetProperty(scintilla, "AnchorPosition", 0);
+        textBox.SelectionStart = 0;
+        textBox.SelectionLength = 0;
     }
 
     public void Dispose()
     {
         Control?.Dispose();
-    }
-
-    private static void ConfigureScintilla(Control control, string lexerName, bool wordWrap)
-    {
-        control.Dock = DockStyle.Fill;
-        control.Font = new Font("Consolas", 10F);
-        control.BackColor = Color.White;
-
-        var target = (object)control;
-        SetEnumProperty(target, "BorderStyle", "None");
-        SetProperty(target, "LexerName", lexerName);
-        SetEnumProperty(target, "WrapMode", wordWrap ? "Word" : "None");
-        SetEnumProperty(target, "WrapIndentMode", "Indent");
-        SetProperty(target, "ScrollWidthTracking", true);
-        SetProperty(target, "MultipleSelection", true);
-        SetProperty(target, "AdditionalSelectionTyping", true);
-        SetProperty(target, "MouseSelectionRectangularSwitch", true);
-        SetProperty(target, "HScrollBar", !wordWrap);
-        SetProperty(target, "VScrollBar", true);
-        ConfigureMargins(target);
-        ConfigureContextMenu(control, target);
-    }
-
-    private static void ConfigureMargins(object target)
-    {
-        var margins = GetProperty(target, "Margins");
-        if (margins == null) return;
-
-        var lineMargin = GetIndexerValue(margins, 0);
-        if (lineMargin != null)
-        {
-            SetProperty(lineMargin, "Width", 42);
-            SetEnumProperty(lineMargin, "Type", "Number");
-            SetEnumProperty(lineMargin, "Cursor", "ReverseArrow");
-        }
-
-        var foldMargin = GetIndexerValue(margins, 2);
-        if (foldMargin != null)
-        {
-            SetProperty(foldMargin, "Width", 16);
-            SetProperty(foldMargin, "Sensitive", true);
-            SetEnumProperty(foldMargin, "Type", "Symbol");
-            SetEnumProperty(foldMargin, "Cursor", "Arrow");
-        }
-    }
-
-    private static void ConfigureContextMenu(Control control, object target)
-    {
-        var menu = new ContextMenuStrip();
-        AddMenuItem(menu, "Undo", () => InvokeNoArgs(target, "Undo"));
-        AddMenuItem(menu, "Redo", () => InvokeNoArgs(target, "Redo"));
-        menu.Items.Add(new ToolStripSeparator());
-        AddMenuItem(menu, "Cut", () => InvokeNoArgs(target, "Cut"));
-        AddMenuItem(menu, "Copy", () => InvokeNoArgs(target, "Copy"));
-        AddMenuItem(menu, "Paste", () => InvokeNoArgs(target, "Paste"));
-        menu.Items.Add(new ToolStripSeparator());
-        AddMenuItem(menu, "Select All", () => InvokeNoArgs(target, "SelectAll"));
-        control.ContextMenuStrip = menu;
-    }
-
-    private static void AddMenuItem(ContextMenuStrip menu, string text, Action action)
-    {
-        var item = new ToolStripMenuItem(text);
-        item.Click += (sender, args) =>
-        {
-            try { action(); }
-            catch { }
-        };
-        menu.Items.Add(item);
-    }
-
-    private static void InvokeNoArgs(object target, string methodName)
-    {
-        var method = target.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.Public);
-        if (method != null) method.Invoke(target, null);
-    }
-
-    private static object GetProperty(object target, string propertyName)
-    {
-        var prop = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
-        return prop == null ? null : prop.GetValue(target, null);
-    }
-
-    private static object GetIndexerValue(object target, int index)
-    {
-        var prop = target.GetType().GetProperties()
-            .FirstOrDefault(p => p.GetIndexParameters().Length == 1 && p.GetIndexParameters()[0].ParameterType == typeof(int));
-        return prop == null ? null : prop.GetValue(target, new object[] { index });
-    }
-
-    private static void SetProperty(object target, string propertyName, object value)
-    {
-        var prop = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
-        if (prop == null || !prop.CanWrite) return;
-        prop.SetValue(target, value, null);
-    }
-
-    private static void SetEnumProperty(object target, string propertyName, string enumValue)
-    {
-        var prop = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
-        if (prop == null || !prop.CanWrite || !prop.PropertyType.IsEnum) return;
-        prop.SetValue(target, Enum.Parse(prop.PropertyType, enumValue), null);
     }
 }

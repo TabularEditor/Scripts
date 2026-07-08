@@ -9,6 +9,9 @@
  *
  * It is designed for non-interactive `te script` automation and accepts its
  * action, target, culture, and payload through environment variables.
+ *
+ * Provided as-is. This script edits culture linguistic metadata directly and is
+ * not an official supported Tabular Editor product feature.
  */
 
 // Manage semantic model AI instructions and AI schema from te script.
